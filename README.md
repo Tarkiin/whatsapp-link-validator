@@ -1,7 +1,9 @@
 # whatsapp-link-validator
 check whatsapp links group
 
-**install requests, colorama and lxml first, and add links in links.txt**
+**install requirements.txt first, and add links in links.txt**
+pip install -r requirements.txt
+
 
 https://cdn.discordapp.com/attachments/1154927851255111732/1154927867088621679/image.png
 ![app screnshot](https://cdn.discordapp.com/attachments/1154927851255111732/1154927867088621679/image.png).
