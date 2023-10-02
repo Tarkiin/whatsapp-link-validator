@@ -6,7 +6,6 @@ check whatsapp links group
 pip install -r requirements.txt
 
 
-https://cdn.discordapp.com/attachments/1154927851255111732/1154927867088621679/image.png
 ![app screnshot](https://cdn.discordapp.com/attachments/1154927851255111732/1154927867088621679/image.png).
 
 
