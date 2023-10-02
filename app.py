@@ -1,10 +1,10 @@
 import requests
 from lxml import html
 from colorama import Fore, init
+import time
 
 # Inicializar colorama para que funcione correctamente en todas las plataformas
 init(autoreset=True)
-
 
 def is_valid_group_link_updated(url):
     headers = {
@@ -14,18 +14,19 @@ def is_valid_group_link_updated(url):
     response = requests.get(url, headers=headers)
     content = response.text
 
-    # Si la URL de la imagen genérica está presente en la respuesta, el enlace es inválido
-    generic_img_url = "https://static.whatsapp.net/rsrc.php/v3/yB/r/_0dVljceIA5.png"
-    if generic_img_url in content:
-        return False, content
-    return True, content
+    tree = html.fromstring(content)
+    group_name = tree.xpath('/html/body/div[1]/div[1]/div[2]/div/section/div/div/div/div/div[2]/h3/text()')
 
+    # Si el nombre del grupo está vacío o no se encuentra, el enlace es inválido
+    if not group_name or not group_name[0].strip():
+        return False, content
+
+    return True, content
 
 def get_group_name_from_content(content):
     tree = html.fromstring(content)
     group_name = tree.xpath('/html/body/div[1]/div[1]/div[2]/div/section/div/div/div/div/div[2]/h3/text()')
     return group_name[0] if group_name else "Nombre desconocido"
-
 
 def process_and_sort_links_from_file(file_path):
     # Leer el archivo y obtener todos los enlaces
@@ -43,12 +44,17 @@ def process_and_sort_links_from_file(file_path):
     print("Iniciando el procesamiento de enlaces...")  # Mensaje de depuración
 
     total_links = len(links)
+    start_time = time.time()
+
     # Procesar cada enlace y agregarlo a la lista correspondiente
     for index, link in enumerate(links, start=1):
         link = link.strip()  # Eliminar espacios y saltos de línea
         is_valid, content = is_valid_group_link_updated(link)
-        group_name = get_group_name_from_content(content)
+        elapsed_time = time.time() - start_time
+        estimated_total_time = (elapsed_time / index) * total_links
+        time_left = estimated_total_time - elapsed_time
 
+        group_name = get_group_name_from_content(content)
         link_info = f"{link} - {group_name} - Válido"
         if is_valid:
             valid_links.append(link_info)
@@ -56,8 +62,9 @@ def process_and_sort_links_from_file(file_path):
             link_info = f"{link} - {group_name} - Inválido"
             invalid_links.append(link_info)
 
-        # Mostrar el progreso
-        print(f"\rProcesando enlaces... {index}/{total_links}", end='')
+        # Mostrar el progreso y el tiempo estimado
+        minutes_left, seconds_left = divmod(time_left, 60)
+        print(f"\rProcesando enlaces... {Fore.GREEN}{index}{Fore.RESET}/"f"{total_links}. Tiempo estimado restante: {Fore.GREEN}{int(minutes_left)} minutos, {int(seconds_left)} segundos{Fore.RESET}",end='')
 
     print("\nFinalizado el procesamiento de enlaces.")
 
